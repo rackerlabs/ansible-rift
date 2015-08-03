@@ -1,0 +1,6 @@
+---
+- name: Setup .raxcreds credentials file
+  template: src=.raxcreds.j2 dest=./.raxcreds mode=0600
+
+- name: Setup vendored rax.py inventory script
+  template: src=rax.py dest=./inventory/rax.py mode=0755

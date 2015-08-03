@@ -1,0 +1,23 @@
+- name: apt-get install nginx
+  apt: name="{{item}}" update_cache=yes
+  with_items:
+    - apache2-utils
+    - nginx
+  register: apt_get_things
+- debug: var=apt_get_things
+
+- name: create basic auth user/password
+  shell: |
+    echo "{{basic_auth_password}}" | htpasswd -ci /etc/nginx/.htpasswd {{basic_auth_user}}
+  register: create_user
+- debug: var=create_user
+
+- name: configure nginx
+  template: src=default dest=/etc/nginx/sites-available/default
+  register: configure_nginx
+- debug: var=configure_nginx
+
+- name: restart nginx
+  service: name=nginx state=restarted
+  register: nginx_restart
+- debug: var=nginx_restart

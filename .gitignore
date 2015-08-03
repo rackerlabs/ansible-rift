@@ -1,0 +1,5 @@
+*.pyc
+id_rsa*
+inventory/rax.py
+.raxcreds
+configure-ansible.sh

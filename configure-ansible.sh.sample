@@ -1,0 +1,15 @@
+export CLOUDRIFT_SERVER_NAME='ansible-rift'
+export RAX_CREDS_FILE=./.raxcreds
+export RACKSPACE_IMAGE=09de0a66-3156-48b4-90a5-1cf25a905207
+
+export RACKSPACE_FLAVOR=performance1-2
+export RAX_REGION=IAD
+export RAX_USERNAME=
+export RAX_API_KEY=
+
+# this is the public key added to your cloud server's authorized_keys
+export RACKSPACE_SSHKEY_PUB=
+
+# these are the basic auth username and password to put in front of cloudrift
+export CLOUDRIFT_USERNAME=rift
+export CLOUDRIFT_PASSWORD=abcde

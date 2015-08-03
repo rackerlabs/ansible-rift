@@ -1,0 +1,46 @@
+# rax_keypair does not update the public key if a key with that name exists.
+# to force a key update you need to delete and then create the key.
+- name: setup ssh keypair
+  local_action:
+    module: rax_keypair
+    name: ansible-rift
+    public_key: "{{ lookup('env','RACKSPACE_SSHKEY_PUB') }}"
+    region: "{{ lookup('env', 'RAX_REGION') }}"
+    state: present
+  register: make_key_pair
+- debug: var=make_key_pair
+
+- name: create cloudrift server
+  local_action:
+    module: rax
+    name: "{{ lookup('env', 'CLOUDRIFT_SERVER_NAME') }}"
+    flavor: "{{ lookup('env','RACKSPACE_FLAVOR') }}"
+    image: "{{ lookup('env','RACKSPACE_IMAGE') }}"
+    region: "{{ lookup('env','RAX_REGION') }}"
+    state: present
+    count: "1"
+    group: "{{ lookup('env', 'CLOUDRIFT_SERVER_NAME') }}"
+    count_offset: 1
+    exact_count: yes
+    wait: yes
+    wait_timeout: 600
+    key_name: ansible-rift
+  register: cloudrift_servers
+- debug: var=cloudrift_servers
+
+- name: create cloudrift host group
+  local_action:
+    module: add_host
+    hostname: "{{ item.name }}"
+    ansible_ssh_host: "{{ item.rax_accessipv4 }}"
+    ansible_ssh_user: root
+    groupname: cloudrift_hosts
+  with_items: cloudrift_servers.instances
+  register: create_cloudrift_server_host_group
+- debug: var=create_cloudrift_server_host_group
+
+- name: Wait until the server is reachable via ssh (port 22)
+  local_action: wait_for port=22 host="{{ item.rax_accessipv4 }}" search_regex=OpenSSH delay=10
+  with_items: cloudrift_servers.instances
+  register: wait_for_ssh
+- debug: var=wait_for_ssh

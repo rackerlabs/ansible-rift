@@ -1,0 +1,28 @@
+# TODO: using `pkill -9` here is not the best, but rift-worker.sh doesn't
+# seem to shutdown celery reliably.
+- name: stop rift processes
+  shell: |
+    cd /root/Rift
+    export C_FORCE_ROOT=1
+    ./bin/rift.sh stop || true
+    ./bin/rift-worker.sh stop || true
+    ./bin/containers.sh stop || true
+    pkill -9 celery || true
+  register: stop_rift
+- debug: var=stop_rift
+
+- name: start rift processes
+  shell: |
+    cd /root/Rift
+    export C_FORCE_ROOT=1
+    ./bin/containers.sh start
+    ./bin/rift-worker.sh start &
+    ./bin/rift.sh start &
+    sleep 5
+  register: start_rift
+- debug: var=start_rift
+
+- name: health check
+  shell: curl localhost:8000
+  register: rift_health_check
+- debug: var=rift_health_check

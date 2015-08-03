@@ -1,0 +1,26 @@
+- name: cleanup rift servers
+  local_action:
+    module: rax
+    name: "{{ lookup('env', 'CLOUDRIFT_SERVER_NAME') }}"
+    flavor: "{{ lookup('env','RACKSPACE_FLAVOR') }}"
+    image: "{{ lookup('env','RACKSPACE_IMAGE') }}"
+    region: "{{ lookup('env','RAX_REGION') }}"
+    state: absent
+    count: "1"
+    group: "{{ lookup('env', 'CLOUDRIFT_SERVER_NAME') }}"
+    count_offset: 1
+    exact_count: yes
+    wait: yes
+    wait_timeout: 600
+  register: cleanup_servers
+- debug: var=cleanup_servers
+
+- name: cleanup ssh keypair
+  local_action:
+    module: rax_keypair
+    name: ansible-rift
+    public_key: "{{ lookup('env','RACKSPACE_SSHKEY_PUB') }}"
+    region: "{{ lookup('env', 'RAX_REGION') }}"
+    state: absent
+  register: cleanup_key_pair
+- debug: var=cleanup_key_pair

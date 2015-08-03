@@ -1,0 +1,52 @@
+- name: apt-get requirements
+  apt: name="{{item}}" update_cache=yes cache_valid_time=86400
+  with_items:
+    - git
+    - python
+    - python-dev
+    - python-pip
+    - build-essential
+    - libssl-dev
+    - libffi-dev
+    - docker.io
+    - ntp
+  register: apt_get_things
+- debug: var=apt_get_things
+
+- name: clone rift
+  git: clone=yes repo=https://github.com/CloudRift/Rift.git dest=/root/Rift
+  register: clone_rift
+- debug: var=clone_rift
+
+- name: pip install rift
+  pip: name="{{item.name}}" extra_args="{{item.extra_args}}"
+  with_items:
+    # for some reason, `pip install -r requirements.txt` (below) fails
+    # without upgrading pip. For some other reason, `pip install -U pip`
+    # doesn't work without `pip install -U distribute`
+    - name: pip
+      extra_args: "-U"
+    - name: /root/Rift
+      extra_args: "-U"
+  register: pip_install_rift
+- debug: var=pip_install_rift
+
+- name: pip install requirements.txt
+  pip: requirements=/root/Rift/requirements.txt extra_args="-U"
+  register: var=pip_install_requirements
+- debug: var=pip_install_requirements
+
+- name: generate rift secret key
+  shell: |
+    if [ ! -f '/etc/rift/secret.key' ]; then
+        mkdir -p /etc/rift
+        python -c "from cryptography.fernet import Fernet; print Fernet.generate_key()" \
+            > /etc/rift/secret.key
+    fi
+  register: generate_key
+- debug: var=generate_key
+
+- name: write rift.conf
+  template: src=rift.conf dest=/root/Rift/etc/rift/rift.conf
+  register: write_rift_config
+- debug: var=write_rift_config

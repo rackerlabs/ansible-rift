@@ -1,0 +1,14 @@
+- hosts: localhost
+  connection: local
+  roles:
+    - raxcreds
+    - create_server
+
+- hosts: cloudrift_hosts
+  roles:
+    - install_rift
+    - start_rift
+    - setup_nginx
+  vars:
+    basic_auth_user: "{{ lookup('env', 'CLOUDRIFT_USERNAME') }}"
+    basic_auth_password: "{{ lookup('env', 'CLOUDRIFT_PASSWORD') }}"
