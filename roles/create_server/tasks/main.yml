@@ -1,14 +1,22 @@
-# rax_keypair does not update the public key if a key with that name exists.
-# to force a key update you need to delete and then create the key.
-- name: setup ssh keypair
+- name: delete ssh keypair
+  local_action:
+    module: rax_keypair
+    name: ansible-rift
+    public_key: "{{ lookup('env','RACKSPACE_SSHKEY_PUB') }}"
+    region: "{{ lookup('env', 'RAX_REGION') }}"
+    state: absent
+  register: delete_key_pair
+- debug: var=delete_key_pair
+
+- name: create ssh keypair
   local_action:
     module: rax_keypair
     name: ansible-rift
     public_key: "{{ lookup('env','RACKSPACE_SSHKEY_PUB') }}"
     region: "{{ lookup('env', 'RAX_REGION') }}"
     state: present
-  register: make_key_pair
-- debug: var=make_key_pair
+  register: create_key_pair
+- debug: var=create_key_pair
 
 - name: create cloudrift server
   local_action:

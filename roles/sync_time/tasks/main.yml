@@ -1,0 +1,6 @@
+# assumes ntp is installed
+- name: sync to network time
+  shell: |
+    service ntp stop
+    ntpd -gq
+    service ntp start
